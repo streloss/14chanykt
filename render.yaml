@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: 14chanykt
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1
