@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14chanykt - Анонимный форум Якутска</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили 4chan */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #eef2ff; color: #000; font-family: Arial; font-size: 14px; }
+        .header { background: #af0a0f; color: #fff; padding: 15px; border-bottom: 2px solid #000; }
+        .site-title { font-size: 24px; font-weight: bold; }
+        .nav-bar { background: #eef2ff; padding: 10px; border: 1px solid #b7c5d9; margin: 15px; }
+        .boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 15px; }
+        .board { background: #f0e0d6; border: 1px solid #d9bfb7; padding: 10px; cursor: pointer; }
+        .board:hover { background: #e8d0c6; }
+        .board-name { color: #0f0c5d; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; color: #666; border-top: 1px solid #b7c5d9; margin-top: 30px; }
+        #app { min-height: 400px; padding: 20px; }
+        .loading { text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="site-title">14chanykt</div>
+        <div>Анонимный форум Якутска в стиле 4chan</div>
+    </div>
+    
+    <div class="nav-bar">
+        <a href="/" style="color: #0f0c5d; text-decoration: none; margin-right: 15px;">[Главная]</a>
+        <span id="online" style="float: right;">Онлайн: Загрузка...</span>
+    </div>
+    
+    <div id="app">
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin fa-2x"></i>
+            <p>Загрузка форума...</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>14chanykt &copy; 2024 - Анонимный форум Якутска</p>
+        <p>Работает на Node.js + SQLite | Деплой на Render</p>
+    </div>
+    
+    <script>
+        // Простой клиентский код
+        async function loadBoards() {
+            try {
+                const response = await fetch('/api/boards');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const boardsHtml = data.data.map(board => `
+                        <div class="board" onclick="window.location.href='/board.html?board=${board.code}'">
+                            <div class="board-name">/${board.code}/ - ${board.name}</div>
+                            <div>${board.description}</div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('app').innerHTML = `
+                        <h2 style="color: #0f0c5d; padding: 15px;">Доски</h2>
+                        <div class="boards">${boardsHtml}</div>
+                    `;
+                    
+                    // Обновляем онлайн счетчик
+                    document.getElementById('online').textContent = `Онлайн: ${Math.floor(Math.random() * 200) + 800}`;
+                }
+            } catch (error) {
+                document.getElementById('app').innerHTML = `
+                    <div style="color: #af0a0f; padding: 20px; text-align: center;">
+                        <h3>Ошибка загрузки</h3>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()">Обновить</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Загружаем доски при старте
+        loadBoards();
+        
+        // Обновляем онлайн каждые 30 секунд
+        setInterval(() => {
+            const onlineElement = document.getElementById('online');
+            if (onlineElement) {
+                const current = parseInt(onlineElement.textContent.match(/\d+/)[0]) || 800;
+                const change = Math.floor(Math.random() * 21) - 10;
+                onlineElement.textContent = `Онлайн: ${Math.max(800, current + change)}`;
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
